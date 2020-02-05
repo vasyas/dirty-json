@@ -1,21 +1,21 @@
-// < begin copyright > 
+// < begin copyright >
 // Copyright Ryan Marcus 2018
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-// 
-// < end copyright > 
- 
+//
+// < end copyright >
+
 "use strict";
 
 let lexer = require("./lexer");
@@ -45,15 +45,19 @@ const LEX_LCB = -3;
 const LEX_LB = -4;
 const LEX_DOT = -5;
 
+function newStack() {
+    const r = [];
 
-Array.prototype.peek = function() {
-    return this[this.length - 1];
-};
+    r.peek = function() {
+        return this[this.length - 1];
+    };
 
-Array.prototype.last = function(i) {
-    return this[this.length - (1 + i)];
-};
+    r.last = function(i) {
+        return this[this.length - (1 + i)];
+    };
 
+    return r;
+}
 
 function is(obj, prop) {
     return (obj && obj.hasOwnProperty("type") && obj.type == prop);
@@ -66,9 +70,9 @@ function log(str) {
 
 module.exports.parse = parse;
 function parse(text) {
-    let stack = [];
+    let stack = newStack();
 
-    let tokens = [];
+    let tokens = newStack();
     let emit = function(t) {
         tokens.push(t);
     };
@@ -96,7 +100,7 @@ function parse(text) {
             log(stack);
             log("Reducing...");
         }
-        
+
     }
 
     return compileOST(stack[0]);
@@ -212,9 +216,9 @@ function reduce(stack) {
             let oldLastVal = stack.peek().value.pop();
             oldLastVal +=  '"' + middleVal.value + '"';
             oldLastVal += next.value;
-            
+
             stack.peek().value.push(oldLastVal);
-            
+
             return true;
         }
 
@@ -224,9 +228,9 @@ function reduce(stack) {
             let oldLastVal = stack.peek().value.pop();
             oldLastVal.value +=  '"' + middleVal.value + '"';
             oldLastVal.value += next.value;
-            
+
             stack.peek().value.push(oldLastVal);
-            
+
             return true;
         }
 
@@ -367,7 +371,7 @@ function reduce(stack) {
             next.value.forEach(function (i) {
                 stack.peek().value.push(i);
             });
-            
+
             return true;
         }
 
@@ -425,7 +429,7 @@ function reduce(stack) {
             return true;
         }
 
-        
+
         if (is(stack.peek(), LEX_COMMA) && (
             is(stack.last(1), LEX_KEY)
                 || is(stack.last(1), LEX_OBJ)
@@ -497,7 +501,7 @@ function reduce(stack) {
         throw new Error("Found } that I can't handle at line " +
                         next.row + ":" + next.col);
 
-        
+
     case LEX_COMMA:
         if (is(stack.peek(), LEX_COMMA)) {
             log("Comma error rule 1");
@@ -528,7 +532,7 @@ function compileOST(tree) {
             toR.unshift(compileOST(tree.pop()));
         return toR;
     }
-    
+
 
     if (is(tree, LEX_OBJ)) {
         let toR = {};
